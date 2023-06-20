@@ -18,8 +18,27 @@ use App\Http\Controllers\CandidatesController;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-
-//test
-
+//public
 Route::get('/candidates', [CandidatesController::class, 'index']);
 Route::get('/candidate/{user}', [CandidatesController::class, 'show']);
+
+//user routes
+Route::group(['middleware' => ['auth:sanctum']], function () {
+    Route::get('/test', function () {
+        return response()->json('test user ability');
+    });
+});
+//admin routes
+Route::group(['middleware' => ['auth:sanctum', 'ability:admin']], function () {
+    Route::get('/test2', function () {
+        return response()->json('test admin ability');
+    });
+});
+
+// candidate routes
+Route::group(['middleware' => ['auth:sanctum', 'ability:admin,candidate']], function () {
+    Route::get('/test3', function () {
+        return response()->json('test admin ability');
+    });
+});
+//test
