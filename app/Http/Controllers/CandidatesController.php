@@ -4,105 +4,62 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class CandidatesController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * get all candidates with votes
      */
     public function index()
     {
-        $users = User::where('is_candidate', true)->with('receivedVotes')->get();
-
-        $formattedData = $users->map(function ($user) {
-            return [
-                'id' => $user->id,
-                'name' => $user->name,
-                'avatar' => $user->avatar,
-                'is_candidate' => $user->is_candidate,
-                'votes' => $user->receivedVotes->count(),
-            ];
-        });
-
-        return response()->json($formattedData);
-    }
-
-
-
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
+        $users = User::where('is_candidate', true)
+            ->select('id', 'name')
+            ->withCount('receivedVotes')
+            ->with([
+                'receivedFeedback' => function ($query) {
+                    $query
+                        ->where('public', true)
+                        ->select('id', 'user_id', 'candidate_id', 'feedback', 'anonymous')
+                        ->orderBy('updated_at', 'desc');
+                }
+            ])
+            ->get();
+        return response()->json($users);
     }
     /**
-     * Display the specified resource.
+     * show candidate with votes and feedback
      */
     public function show(User $user)
     {
-        $user->load([
-            'receivedVotes',
-            'receivedFeedback' => function ($query) {
-                $query->where('public', true)->with('user:id,name')->latest('updated_at');
-            }
-        ]);
-
-        $formattedFeedbacks = $user->receivedFeedback->map(function ($feedback) {
-            return [
-                'id' => $feedback->id,
-                'feedback' => $feedback->feedback,
-                'anonymous' => $feedback->anonymous,
-                'created_at' => $feedback->created_at,
-                'user' => $feedback->user,
-            ];
+        //check if user is candidate
+        if (!$user->is_candidate) return response()->json(['message' => 'User is not a candidate'], 400);
+        //get all necessary data
+        $user
+            ->loadCount('receivedVotes')
+            ->load([
+                'receivedFeedback' => function ($query) {
+                    $query
+                        ->where('public', true)
+                        ->select('id', 'user_id', 'candidate_id', 'feedback', 'anonymous')
+                        ->orderBy('updated_at', 'desc');
+                }
+            ]);
+        // show user if the user is not anonymous in the feedback
+        $formattedFeedback = $user->receivedFeedback->map(function ($feed) {
+            return !$feed->anonymous ? $feed : $feed->load('user:id,name,email');
         });
-        $formattedVotes = $user->receivedVotes->count();
-
-        $formattedUser = [
+        return [
             'id' => $user->id,
             'name' => $user->name,
-            'avatar' => $user->avatar,
-            'is_candidate' => $user->is_candidate,
-            'votes' => $formattedVotes,
-            'feedback' => $formattedFeedbacks,
+            'received_votes_count' => $user->received_votes_count,
+            'received_feedback' => $formattedFeedback
         ];
-
-        return response()->json($formattedUser);
-    }
-
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
     }
 
     /**
-     * Update the specified resource in storage.
+     * remove candidate from the candidates list
      */
-    public function update(Request $request, string $id)
+    public function remove_candidate(Request $request, string $id)
     {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
     }
 }
