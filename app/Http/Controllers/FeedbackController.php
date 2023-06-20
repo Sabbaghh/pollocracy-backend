@@ -7,23 +7,7 @@ use Illuminate\Http\Request;
 class FeedbackController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
+     * leave a feedback for any user
      */
     public function store(Request $request)
     {
@@ -31,23 +15,7 @@ class FeedbackController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
+     * make the feedback public or private
      */
     public function update(Request $request, string $id)
     {
@@ -55,7 +23,7 @@ class FeedbackController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Remove feedback
      */
     public function destroy(string $id)
     {
