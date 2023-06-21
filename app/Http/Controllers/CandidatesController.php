@@ -15,15 +15,8 @@ class CandidatesController extends Controller
         $users = User::where('is_candidate', true)
             ->select('id', 'name')
             ->withCount('receivedVotes')
-            ->with([
-                'receivedFeedback' => function ($query) {
-                    $query
-                        ->where('public', true)
-                        ->select('id', 'user_id', 'candidate_id', 'feedback', 'anonymous')
-                        ->orderBy('updated_at', 'desc');
-                }
-            ])
-            ->get();
+            ->orderBy('received_votes_count', 'desc')
+            ->paginate(6);
         return response()->json($users);
     }
     /**
