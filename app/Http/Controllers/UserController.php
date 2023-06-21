@@ -2,17 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
+use App\Traits\HttpResponses;
 
 class UserController extends Controller
 {
+    use HttpResponses;
     /**
      * @PUBLIC
      * show all users who are not candidates
      */
     public function index()
     {
-        //
+        $users = User::where('is_candidate', false)
+            ->select('id', 'name')
+            ->paginate(5);
+        return response()->json($users);
     }
 
     /**
