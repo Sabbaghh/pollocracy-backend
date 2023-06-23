@@ -2,9 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ValidateUserIdRequest;
+use App\Models\Feedback;
 use App\Models\User;
+use App\Models\Vote;
 use Illuminate\Http\Request;
 use App\Traits\HttpResponses;
+use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
@@ -15,9 +19,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::where('is_candidate', false)
-            ->select('id', 'name')
-            ->paginate(5);
+        $users = User::select('id', 'name', 'avatar')->paginate(5);
         return response()->json($users);
     }
 
@@ -41,37 +43,54 @@ class UserController extends Controller
 
     /**
      * @PRIVATE ( permission only for admin )
-     * make the user candidate
+     * make the user candidate by id
      */
-    public function make_candidate(Request $request, string $id)
+    public function make_candidate(ValidateUserIdRequest $request)
     {
-        //
+        return $this->make_role($request, 'is_candidate');
     }
 
-    /**
-     * @PRIVATE ( permission only for admin )
-     * make the user admin
-     */
-    public function make_admin(Request $request, string $id)
+    public function make_admin(ValidateUserIdRequest $request)
     {
-        //
+        return $this->make_role($request, 'is_admin');
     }
 
     /**
      * @PRIVATE (permission only for admin)
-     * Remove any user
+     * Remove any user by id
      */
-    public function destroy(string $id)
+    public function destroy(ValidateUserIdRequest $request)
     {
-        //
+        $user = $this->check_user_exist($request);
+        $user->tokens()->delete();
+        //delete all feedback and votes related to the user or by the user
+        $this->remove_related_data($user->id);
+        $user->delete();
+        return $this->success(
+            ['user' => $user],
+            'User is deleted',
+            200
+        );
     }
     /**
-     * @PRIVATE (permission only for admin and the user/candidate)
+     * @PRIVATE (permission for any user)
      * user remove themselves
      */
-    public function destroy_self(Request $request, string $id)
+
+    public function destroy_self()
     {
-        //
+        /** @var \App\Models\User */
+
+        $user = Auth::user();
+        $user->tokens()->delete();
+        //delete all feedback and votes related to the user or by the user
+        $this->remove_related_data($user->id);
+        $user->delete();
+        return $this->success(
+            ['user' => $user],
+            'User is deleted',
+            200
+        );
     }
 
     /**
@@ -81,5 +100,37 @@ class UserController extends Controller
     public function search_users(Request $request)
     {
         //
+    }
+
+
+    private function make_role(ValidateUserIdRequest $request, string $role)
+    {
+        $user = $this->check_user_exist($request);
+        if (!$user->{$role}) {
+            $user->tokens()->delete();
+            $user->update([$role => true]);
+            return $this->success(
+                ['user' => $user],
+                "User has been successfully made a $role",
+                201
+            );
+        }
+        return $this->fail(
+            null,
+            "User is already a $role",
+            400
+        );
+    }
+    private function check_user_exist(ValidateUserIdRequest $request)
+    {
+        $validatedData = $request->validated();
+        $userId = $validatedData['user_id'];
+        $user = User::findOrFail($userId);
+        return $user;
+    }
+    private function remove_related_data(String $id)
+    {
+        Feedback::where('user_id', $id)->orWhere('candidate_id', $id)->delete();
+        Vote::where('user_id', $id)->orWhere('candidate_id', $id)->delete();
     }
 }
