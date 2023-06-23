@@ -2,17 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ValidateUserIdRequest;
-use App\Models\Feedback;
 use App\Models\User;
 use App\Models\Vote;
+use App\Models\Feedback;
 use Illuminate\Http\Request;
 use App\Traits\HttpResponses;
+use App\Traits\CheckUserExist;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\ValidateUserIdRequest;
 
 class UserController extends Controller
 {
-    use HttpResponses;
+    use HttpResponses, CheckUserExist;
     /**
      * @PUBLIC
      * show all users who are not candidates
@@ -84,13 +85,13 @@ class UserController extends Controller
         $user = Auth::user();
         $user->tokens()->delete();
         //delete all feedback and votes related to the user or by the user
-        $this->remove_related_data($user->id);
+        $this
+            ->remove_related_data($user->id);
+
         $user->delete();
-        return $this->success(
-            ['user' => $user],
-            'User is deleted',
-            200
-        );
+
+        return $this
+            ->success(['user' => $user], 'User is deleted', 200);
     }
 
     /**
@@ -105,28 +106,18 @@ class UserController extends Controller
 
     private function make_role(ValidateUserIdRequest $request, string $role)
     {
-        $user = $this->check_user_exist($request);
+        $user = $this
+            ->check_user_exist($request);
         if (!$user->{$role}) {
+
             $user->tokens()->delete();
+
             $user->update([$role => true]);
-            return $this->success(
-                ['user' => $user],
-                "User has been successfully made a $role",
-                201
-            );
+            return $this
+                ->success(['user' => $user], "User has been successfully made a $role", 201);
         }
-        return $this->fail(
-            null,
-            "User is already a $role",
-            400
-        );
-    }
-    private function check_user_exist(ValidateUserIdRequest $request)
-    {
-        $validatedData = $request->validated();
-        $userId = $validatedData['user_id'];
-        $user = User::findOrFail($userId);
-        return $user;
+        return $this
+            ->fail(null, "User is already a $role", 400);
     }
     private function remove_related_data(String $id)
     {

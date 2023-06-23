@@ -18,7 +18,9 @@ class AuthController extends Controller
         $request->validated();
 
         $credentials = $request->only('email', 'password');
+
         if (auth()->attempt($credentials)) {
+            /** @var \App\Models\User */
             $user = auth()->user();
             $user->tokens()->delete();
             $abilities = collect([]);
