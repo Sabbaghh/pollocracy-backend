@@ -32,13 +32,14 @@ Route::get('/admins', [AdminController::class, 'index']);
 //user routes
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/logout', [AuthController::class, 'logout']);
-    Route::post('/destroy_self', [UserController::class, 'destroy_self']);
+    Route::delete('/destroy_self', [UserController::class, 'destroy_self']);
 });
 //admin routes
 Route::group(['middleware' => ['auth:sanctum', 'abilities:admin']], function () {
     Route::post('/make-candidate', [UserController::class, 'make_candidate']);
     Route::post('/make-admin', [UserController::class, 'make_admin']);
     Route::post('/destroy', [UserController::class, 'destroy']);
+    Route::post('/remove-candidate', [CandidatesController::class, 'remove_candidate']);
 });
 
 // candidate routes
@@ -46,4 +47,5 @@ Route::group(['middleware' => ['auth:sanctum', 'ability:admin,candidate']], func
     Route::get('/test3', function () {
         return response()->json('test admin ability');
     });
+    Route::post('/remove_candidate_self', [CandidatesController::class, 'remove_candidate_self']);
 });

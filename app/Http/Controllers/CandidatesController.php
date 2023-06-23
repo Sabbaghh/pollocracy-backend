@@ -3,10 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use Illuminate\Http\Request;
+use App\Traits\HttpResponses;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\ValidateUserIdRequest;
+use App\Traits\CheckUserExist;
 
 class CandidatesController extends Controller
 {
+    use HttpResponses, CheckUserExist;
     /**
      * get all candidates with votes
      */
@@ -17,7 +21,7 @@ class CandidatesController extends Controller
             ->withCount('receivedVotes')
             ->orderBy('received_votes_count', 'desc')
             ->paginate(6);
-        return response()->json($users);
+        return $this->success($users, "Candidates list", 200);
     }
     /**
      * show candidate with votes and feedback
@@ -25,7 +29,10 @@ class CandidatesController extends Controller
     public function show(User $user)
     {
         //check if user is candidate
-        if (!$user->is_candidate) return response()->json(['message' => 'User is not a candidate'], 400);
+        if (!$user->is_candidate) {
+            return $this
+                ->fail(null, "User isn't a candidate", 400);
+        }
         //get all necessary data
         $user
             ->loadCount('receivedVotes')
@@ -52,7 +59,22 @@ class CandidatesController extends Controller
     /**
      * remove candidate from the candidates list
      */
-    public function remove_candidate(Request $request, string $id)
+    public function remove_candidate(ValidateUserIdRequest $request)
     {
+        $user = $this->check_user_exist($request);
+        if (!$user->is_candidate) return $this->fail(null, "User isn't a candidate", 400);
+        $user->is_candidate = false;
+        $user->save();
+        return $this->success($user, "User is no longer a candidate", 200);
+    }
+
+    public function remove_candidate_self()
+    {
+        /** @var \App\Models\User */
+        $user = Auth::user();
+        if (!$user->is_candidate) return $this->fail(null, "User isn't a candidate", 400);
+        $user->tokens()->delete();
+        $user->update(['is_candidate' => false]);
+        return $this->success($user, "User is no longer a candidate", 200);
     }
 }
