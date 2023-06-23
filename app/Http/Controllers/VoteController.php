@@ -13,12 +13,4 @@ class VoteController extends Controller
     public function store(Request $request)
     {
     }
-    /**
-     * @PRIVATE (permission admin/candidate/user)
-     * unvote candidate
-     */
-    public function destroy(string $id)
-    {
-        //
-    }
 }

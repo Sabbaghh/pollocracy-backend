@@ -18,6 +18,7 @@ return new class extends Migration
             $table->longText('feedback');
             $table->boolean('anonymous')->default(true);
             $table->boolean('public')->default(false);
+            $table->longText('feedback_reply')->nullable();
             $table->timestamps();
         });
     }

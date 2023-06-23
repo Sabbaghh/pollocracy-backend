@@ -87,9 +87,7 @@ class UserController extends Controller
         //delete all feedback and votes related to the user or by the user
         $this
             ->remove_related_data($user->id);
-
         $user->delete();
-
         return $this
             ->success(['user' => $user], 'User is deleted', 200);
     }

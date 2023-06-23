@@ -21,6 +21,7 @@ class FeedbackFactory extends Factory
             'user_id' => fake()->numberBetween(1, 4),
             'candidate_id' => fake()->numberBetween(1, 4),
             'feedback' => fake()->paragraph(),
+            'feedback_reply' => fake()->paragraph(),
             'anonymous' => fake()->boolean(),
             'public' => fake()->boolean(),
         ];

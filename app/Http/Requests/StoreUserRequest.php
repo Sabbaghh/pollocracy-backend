@@ -2,8 +2,8 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rules;
+use Illuminate\Foundation\Http\FormRequest;
 
 class StoreUserRequest extends FormRequest
 {
@@ -23,7 +23,9 @@ class StoreUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            "name" => ["required", "string", "max:255"],
+            "first_name" => ["required", "string", "max:255"],
+            "last_name" => ["required", "string", "max:255"],
+            "username" => ["required", 'regex:/^(?![0-9])[a-zA-Z0-9_]{1,30}$/', "max:255", "unique:users"],
             "email" => ["required", "string", "email", "max:255", "unique:users"],
             "password" => ["required", "string", "confirmed", Rules\Password::defaults()],
         ];
