@@ -17,7 +17,7 @@ class CandidatesController extends Controller
     public function index()
     {
         $users = User::where('is_candidate', true)
-            ->select('id', 'name')
+            ->select('id', 'first_name', 'last_name', 'username')
             ->withCount('receivedVotes')
             ->orderBy('received_votes_count', 'desc')
             ->paginate(6);
@@ -50,7 +50,7 @@ class CandidatesController extends Controller
         });
         return [
             'id' => $user->id,
-            'name' => $user->name,
+            'firs_name' => $user->first_name,
             'received_votes_count' => $user->received_votes_count,
             'received_feedback' => $formattedFeedback
         ];

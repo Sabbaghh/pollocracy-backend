@@ -15,7 +15,7 @@ class AdminController extends Controller
     public function index()
     {
         $admins = User::where('is_admin', true)
-            ->select('id', 'name')
+            ->select('id', 'first_name', 'last_name', 'username')
             ->paginate(5);
         return response()->json($admins);
     }
