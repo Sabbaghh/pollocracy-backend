@@ -18,7 +18,11 @@ class CandidatesController extends Controller
     {
         $users = User::where('is_candidate', true)
             ->select('id', 'first_name', 'last_name', 'username')
-            ->withCount('receivedVotes')
+            ->withCount(['receivedVotes' => function ($query) {
+                //where votes this month and year
+                $query->whereMonth('created_at', date('m'))
+                    ->whereYear('created_at', date('Y'));
+            }])
             ->orderBy('received_votes_count', 'desc')
             ->paginate(6);
         return $this->success($users, "Candidates list", 200);
