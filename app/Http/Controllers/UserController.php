@@ -20,7 +20,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        $users = User::select('id', 'first_name', 'avatar')->paginate(5);
+        $users = User::select('id', 'first_name', 'avatar', 'has_voted')->paginate(5);
         return response()->json($users);
     }
 

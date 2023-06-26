@@ -22,6 +22,7 @@ return new class extends Migration
             $table->boolean('is_candidate')->default(true);
             $table->boolean('is_admin')->default(false);
             $table->string('avatar')->nullable();
+            $table->timestamp('has_voted')->nullable()->default(null);
             $table->timestamp('email_verified_at')->nullable();
             $table->timestamps();
         });

@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CandidatesController;
+use App\Http\Controllers\VoteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -33,6 +34,7 @@ Route::get('/admins', [AdminController::class, 'index']);
 Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::delete('/destroy_self', [UserController::class, 'destroy_self']);
+    Route::post('/vote', [VoteController::class, 'store']);
 });
 //admin routes
 Route::group(['middleware' => ['auth:sanctum', 'abilities:admin']], function () {
